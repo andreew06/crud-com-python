@@ -1,0 +1,12 @@
+# Arquivos de banco de dados locais
+* .db
+meubanco.db
+
+# Pastas de cache invisíveis do Python
+__pycache__/
+* .pyc
+
+# Pastas de ambientes virtuais
+venv/
+env/
+.env
