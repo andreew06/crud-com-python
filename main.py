@@ -46,6 +46,7 @@ def listar_usuarios(
     skip: int=0, 
     limit: int=10,
     busca_nome: str=None,
+    ativo: bool=True,
     db: Session = Depends(get_db)
     ):
 
@@ -53,6 +54,9 @@ def listar_usuarios(
     query = db.query(models.Usuario)
 
     #2 se usuario informou algo para a busca, adiciona o filtro
+    # NOVO: filtra apenas usuarios ativos
+    query = query.filter(models.Usuario.ativo==ativo)
+
     if busca_nome is not None:
         query = query.filter(models.Usuario.nome.contains(busca_nome))
 
@@ -91,11 +95,11 @@ def deletar_usuario(usuario_id: int, db: Session=Depends(get_db)):
     if usuario_db is None:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
-    #3 da ordem de exclusão
-    db.delete(usuario_db)
+    #3 NOVO: da ordem de *desativação*
+    usuario_db.ativo = False
 
     #4 salva as alterações (remoção) no arquivo físico
     db.commit()
 
     #5 retorna mensagem de confirmação
-    return {"mensagem": f"Usuário {usuario_db.nome}, id: {usuario_db.id} deletado com sucesso"}
+    return {"mensagem": f"Usuário {usuario_db.nome}, id: {usuario_db.id} desativado com sucesso"}

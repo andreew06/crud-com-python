@@ -9,6 +9,7 @@ class UsuarioResponse(BaseModel):
     id: int
     nome: str
     email: str
+    ativo: bool
 
     class Config:
         form_attributes = True
