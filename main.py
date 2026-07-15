@@ -40,16 +40,28 @@ def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db))
     #5 retorna o usuario criado para quem fez a requisição
     return novo_usuario
 
-
+# Rota GET para listar usuários
 @app.get("/usuarios/", response_model=list[schemas.UsuarioResponse])
-def listar_usuarios(db: Session = Depends(get_db)):
-    #1 busca no banco de dados
-    usuarios = db.query(models.Usuario).all()
+def listar_usuarios(
+    skip: int=0, 
+    limit: int=10,
+    busca_nome: str=None,
+    db: Session = Depends(get_db)
+    ):
 
-    #2 retorna lista de usuários
+    #1 prepara base da busca sem executar no banco
+    query = db.query(models.Usuario)
+
+    #2 se usuario informou algo para a busca, adiciona o filtro
+    if busca_nome is not None:
+        query = query.filter(models.Usuario.nome.contains(busca_nome))
+
+    #3 Aplica a páginação (pula x resultados e pega no máximo y) e executa
+    usuarios = query.offset(skip).limit(limit).all()
+
     return usuarios
 
-
+# Rota PUT para atualiza um usuário
 @app.put("/usuarios/{usuario_id}", response_model=schemas.UsuarioResponse)
 def atualizar_usuario(usuario_id: int, usuario:schemas.UsuarioCreate, db: Session = Depends(get_db)):
     #1 busca usuario específico no banco de dados
@@ -69,7 +81,7 @@ def atualizar_usuario(usuario_id: int, usuario:schemas.UsuarioCreate, db: Sessio
 
     return usuario_db
 
-
+# Rota DELETE para excluir um usuário fisicamente do banco
 @app.delete("/usuario/{usuario_id}")
 def deletar_usuario(usuario_id: int, db: Session=Depends(get_db)):
     #1 busca o usuário específico no banco de dados
